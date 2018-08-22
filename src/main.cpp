@@ -65,13 +65,13 @@ const PROGMEM int HOURS[][3] = {
   {1, 12, 5}, // three
   {7, 11, 4}, // four
   {11, 11, 4}, // five
-  {13, 10, 3}, // six
-  {2, 19, 5}, // seven (beven)
+  {14, 9, 3}, // six
+  {2, 10, 5}, // seven (beven)
   {9, 10, 5}, // eight
   {6, 10, 4}, // nine
   {13, 10, 3}, // ten
   {8, 9, 6}, // eleven
-  {1, 12, 6} // twelve
+  {1, 11, 6} // twelve
 };
 
 // leds var...
