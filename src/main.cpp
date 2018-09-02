@@ -30,7 +30,6 @@ TwoWire myWire(0);
 #endif
 #include <WiFiManager.h> 
 
-
 // for ntp time gathering...
 #define TIME_OFFSET -25200
 // #define UPDATE_INTERVAL 60000
@@ -46,18 +45,11 @@ NTPClient timeClient(ntpUDP, "time.google.com", TIME_OFFSET, UPDATE_INTERVAL);
 #define COLS 16
 #define NUM_LEDS ROWS*COLS
 
-#define DATA_PIN 13
+#define DATA_PIN 12
 
 // setup words...
 const PROGMEM int w_IT[] = {1, 1, 2};
 const PROGMEM int w_IS[] = {4, 1, 2};
-
-// hours...
-const PROGMEM int w_ONE[3]   = {6, 9, 3};
-const PROGMEM int w_TWO[3]   = {4, 9, 3};
-const PROGMEM int w_THREE[3] = {1, 12, 5};
-const PROGMEM int w_FOUR[3]  = {6, 9, 3};
-const PROGMEM int w_FIVE[3]  = {6, 9, 3};
 
 const PROGMEM int HOURS[][3] = {
   {6, 9, 3}, // one
@@ -72,6 +64,77 @@ const PROGMEM int HOURS[][3] = {
   {13, 10, 3}, // ten
   {8, 9, 6}, // eleven
   {1, 11, 6} // twelve
+};
+
+const PROGMEM int MINUTES[][3] = {
+  {7, 12, 7}, // o'clock
+  {14, 2, 3}, // one (minute past)
+  {5, 3, 3},  // two (minutes past)
+  {12, 4, 5}, // three (minutes past)
+  {8, 2, 4}, // four (minutes past)
+  {1, 3, 4}, // five (minutes past)
+  {1, 6, 3}, // six (minutes past)
+  {1, 7, 5}, // seven (minutes past)
+  {9, 6, 5}, // eight (minutes past)
+  {1, 5, 4}, // nine (minutes past)
+  {14, 1, 3}, // ten (minutes past)
+  {6, 4, 6}, // eleven (minutes past)
+  {1, 4, 6}, // twelve (minutes past)
+  {8, 3, 8}, // thirteen (minutes past)
+  {9, 5, 8}, // fourteen (minutes past)
+  {10, 7, 7}, // quarter
+  {1, 6, 7}, // sixteen (minutes past)
+  {1, 7, 9}, // seventeen (minutes past)
+  {9, 6, 8}, // eighteen (minutes past)
+  {1, 5, 8}, // nineteen (minutes past)
+  {8, 1, 6}, // twenty (minutes past)
+
+  {14, 2, 3}, // one (twenty)
+  {5, 3, 3},  // two (twenty)
+  {12, 4, 5}, // three (twenty)
+  {8, 2, 4}, // four (twenty)
+  {1, 3, 4}, // five (twenty)
+  {1, 6, 3}, // six (twenty)
+  {1, 7, 5}, // seven (twenty)
+  {9, 6, 5}, // eight (twenty)
+  {1, 5, 4}, // nine (twenty)
+
+  {8, 8, 4}, // half
+
+  {14, 2, 3}, // one (thirty)
+  {5, 3, 3},  // two (thirty)
+  {12, 4, 5}, // three (thirty)
+  {8, 2, 4}, // four (thirty)
+  {1, 3, 4}, // five (thirty)
+  {1, 6, 3}, // six (thirty)
+  {1, 7, 5}, // seven (thirty)
+  {9, 6, 5}, // eight (thirty)
+  {1, 5, 4}, // nine (thirty)
+
+  {8, 1, 6}, // twenty (till)
+
+  {14, 2, 3}, // one (twenty till)
+  {5, 3, 3},  // two (twenty till)
+  {12, 4, 5}, // three (twenty till)
+  {8, 2, 4}, // four (twenty till)
+
+  {10, 7, 7}, // quarter (till)
+
+  {1, 6, 3}, // six (twenty till)
+  {1, 7, 5}, // seven (twenty till)
+  {9, 6, 5}, // eight (twenty till)
+  {1, 5, 4}, // nine (twenty till)
+
+  {14, 1, 3}, // ten (minutes till)
+  {1, 5, 4}, // nine (minutes till)
+  {9, 6, 5}, // eight (minutes till)
+  {1, 7, 5}, // seven (minutes till)
+  {1, 6, 3}, // six (minutes till)
+  {1, 3, 4}, // five (minutes till)
+  {8, 2, 4}, // four (minutes till)
+  {12, 4, 5}, // three (minutes till)
+  {5, 3, 3},  // two (minutes till)
+  {14, 2, 3} // one (minute till)
 };
 
 // leds var...
@@ -98,12 +161,12 @@ void setup() {
   delay(1000); // 3 second delay for recovery
   myWire.begin(I2C_SDA, I2C_SCL, 100000);
   Serial.begin(9600);
-
+  Serial.println("Serial Started...");
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
   
   // begin wifi with wifimanager...
-  WiFiManager wifiManager;
-  wifiManager.autoConnect(SETTINGS_NETWORK_SSID, SETTINGS_NETWORK_PASS);
+  // WiFiManager wifiManager;
+  // // wifiManager.autoConnect(SETTINGS_NETWORK_SSID, SETTINGS_NETWORK_PASS);
   // wifiManager.startConfigPortal("WordClockAP");
 
   // begin real time clock...
@@ -133,20 +196,21 @@ void setup() {
 
 static int hue = 0;
 static int a = 0;
+static int b = 0;
 
 void loop() {
   fill_solid(leds, NUM_LEDS, CRGB::Black);
-  light(1, 1, 10);
-  light(16, 19, 40);
-  light(16, 1, 80);
-  light(1, 19, 120);
+  // light(1, 1, 10);
+  // light(16, 19, 40);
+  // light(16, 1, 80);
+  // light(1, 19, 120);
   // light(2, 2, 60);
   // light(2, 3, 100);
  
   lightWord(w_IT, 80);
   lightWord(w_IS, 80);
 
-  leds[5] = CHSV(10, 255, 255);
+  // leds[5] = CHSV(10, 255, 255);
 
   Serial.print(year(), DEC);
   Serial.print('/');
@@ -165,10 +229,15 @@ void loop() {
 
   if(a > 11) a=0;
   Serial.println(a);
-  lightWord(HOURS[a], 120);
+  // lightWord(HOURS[a], 120);
   a++;
+
+  if(b > 59) b=0;
+  Serial.println(b);
+  lightWord(MINUTES[b], 200);
+  b++;
 
   FastLED.show();
 
-  delay(700);
+  delay(1300);
 }
