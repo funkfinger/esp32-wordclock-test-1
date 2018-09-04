@@ -52,14 +52,19 @@ NTPClient timeClient(ntpUDP, "time.google.com", TIME_OFFSET, UPDATE_INTERVAL);
 // setup words...
 const PROGMEM int w_IT[] = {1, 1, 2};
 const PROGMEM int w_IS[] = {4, 1, 2};
+const PROGMEM int w_A[] = {7, 1, 1};
 const PROGMEM int w_HALF[] = {8, 8, 4};
 const PROGMEM int w_PAST[] = {13, 8, 4};
 const PROGMEM int w_TO[] = {1, 9, 2};
 const PROGMEM int w_NOON[] = {6, 14, 4};
 const PROGMEM int w_MIDNIGHT[] = {2, 15, 8};
+const PROGMEM int w_MINUTE[] = {1, 8, 6};
 const PROGMEM int w_MINUTES[] = {1, 8, 7};
+const PROGMEM int w_OCLOCK[] = {7, 12, 7};
+const PROGMEM int w_QUARTER[] = {10, 7, 7};
 
 const PROGMEM int HOURS[][3] = {
+  {1, 1, 0}, // nothing...
   {6, 9, 3}, // one
   {4, 9, 3}, // two
   {1, 12, 5}, // three
@@ -441,8 +446,48 @@ void lightLetter(int letter, uint8_t h) {
 void lightTime(uint8_t hours, uint8_t minutes) {
   uint8_t h = 80;
   bool past = false;
+  lightWord(w_IT, 80);
+  lightWord(w_IS, 80);
+
   switch(minutes) {
-    case 2 ... 19 :
+    case 0 : // this needs to be fixed...
+      switch(hours) {
+        case 0 :
+          lightWord(w_MIDNIGHT, h);
+          break;
+
+        case 12 :
+          lightWord(w_NOON, h);
+          break;
+
+        default :
+          lightWord(w_OCLOCK, h);
+          break;
+      }
+      past = false;
+      break;
+
+    case 1 : 
+      lightWord(w_MINUTE, h);
+      lightWord(MINUTES[minutes], h);
+      past = true;
+      break;
+
+    case 2 ... 14 :
+      lightWord(w_PAST, h);
+      lightWord(MINUTES[minutes], h);
+      lightWord(w_MINUTES, h);
+      past = true;
+      break;
+
+    case 15 :
+      lightWord(w_A, h);
+      lightWord(w_QUARTER, h);
+      lightWord(w_PAST, h);
+      past = true;
+      break;
+
+    case 16 ... 19 :
       lightWord(w_PAST, h);
       lightWord(MINUTES[minutes], h);
       lightWord(w_MINUTES, h);
@@ -463,17 +508,51 @@ void lightTime(uint8_t hours, uint8_t minutes) {
       past = true;
       break;
 
-    case 31 ... 60 :
+    case 31 ... 39 :
+      lightWord(w_PAST, h);
+      lightWord(MINUTES[30], h);
+      lightWord(MINUTES[minutes - 20], h);
+      lightWord(w_MINUTES, h);
+      past = true;
+      break;
+
+    case 40 ... 44 :
+      lightWord(w_TO, h);
+      lightWord(MINUTES[minutes - 40], h);
+      lightWord(w_MINUTES, h);
+      past = false;
+      break;
+
+    case 45 :
+      lightWord(w_A, h);
+      lightWord(w_QUARTER, h);
       lightWord(w_TO, h);
       past = false;
       break;
+
+    case 46 ... 58 :
+      lightWord(w_TO, h);
+      lightWord(MINUTES[minutes - 40], h);
+      lightWord(w_MINUTES, h);
+      past = false;
+      break;
+
+    case 59 :
+      lightWord(w_TO, h);
+      lightWord(MINUTES[minutes - 40], h);
+      lightWord(w_MINUTE, h);
+      past = false;
+      break;
+
   }
+
+
   switch(hours) {
     case 0 :
       lightWord(w_MIDNIGHT, h);
       break;
     case 1 ... 11 :
-      lightWord(HOURS[hours - 1], h);
+      lightWord(HOURS[hours], h);
       break;
     case 12 :
       lightWord(w_NOON, h);
@@ -533,8 +612,6 @@ void loop() {
   // light(2, 2, 60);
   // light(2, 3, 100);
  
-  lightWord(w_IT, 80);
-  lightWord(w_IS, 80);
 
   Serial.print(year(), DEC);
   Serial.print('/');
@@ -561,7 +638,9 @@ void loop() {
   // lightWord(MINUTES[b], 200);
   // b++;
 
-  lightTime(12, 28);
+  if(b > 59) b=0;
+  lightTime(1, b);
+  b++;
 
   // lightLetter(64+b, hue);
   // Serial.println();
@@ -574,5 +653,5 @@ void loop() {
 
   FastLED.show();
 
-  delay(1300);
+  delay(1200);
 }
