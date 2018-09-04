@@ -52,6 +52,12 @@ NTPClient timeClient(ntpUDP, "time.google.com", TIME_OFFSET, UPDATE_INTERVAL);
 // setup words...
 const PROGMEM int w_IT[] = {1, 1, 2};
 const PROGMEM int w_IS[] = {4, 1, 2};
+const PROGMEM int w_HALF[] = {8, 8, 4};
+const PROGMEM int w_PAST[] = {13, 8, 4};
+const PROGMEM int w_TO[] = {1, 9, 2};
+const PROGMEM int w_NOON[] = {6, 14, 4};
+const PROGMEM int w_MIDNIGHT[] = {2, 15, 8};
+const PROGMEM int w_MINUTES[] = {1, 8, 7};
 
 const PROGMEM int HOURS[][3] = {
   {6, 9, 3}, // one
@@ -137,10 +143,6 @@ const PROGMEM int MINUTES[][3] = {
   {12, 4, 5}, // three (minutes till)
   {5, 3, 3},  // two (minutes till)
   {14, 2, 3} // one (minute till)
-};
-
-const PROGMEM int AN_A[][2] = {
-  {1,3}, {2, 2}, {2, 4}, {3, 1}, {3, 5}, {4, 1}, {4, 5}, {5, 1}, {5, 2}, {5, 3}, {5, 4}, {5, 5}, {6, 1}, {6, 5}, {7, 1}, {7, 5}
 };
 
 static const unsigned char font_data[] = {
@@ -436,6 +438,50 @@ void lightLetter(int letter, uint8_t h) {
   }
 }
 
+void lightTime(uint8_t hours, uint8_t minutes) {
+  uint8_t h = 80;
+  bool past = false;
+  switch(minutes) {
+    case 2 ... 19 :
+      lightWord(w_PAST, h);
+      lightWord(MINUTES[minutes], h);
+      lightWord(w_MINUTES, h);
+      past = true;
+      break;
+
+    case 20 ... 29 :
+      lightWord(w_PAST, h);
+      lightWord(MINUTES[20], h);
+      lightWord(MINUTES[minutes - 20], h);
+      lightWord(w_MINUTES, h);
+      past = true;
+      break;
+
+    case 30 :
+      lightWord(w_HALF, h);
+      lightWord(w_PAST, h);
+      past = true;
+      break;
+
+    case 31 ... 60 :
+      lightWord(w_TO, h);
+      past = false;
+      break;
+  }
+  switch(hours) {
+    case 0 :
+      lightWord(w_MIDNIGHT, h);
+      break;
+    case 1 ... 11 :
+      lightWord(HOURS[hours - 1], h);
+      break;
+    case 12 :
+      lightWord(w_NOON, h);
+      break;
+  }
+
+}
+
 void setup() {
   delay(1000); // 3 second delay for recovery
   myWire.begin(I2C_SDA, I2C_SCL, 100000);
@@ -490,8 +536,6 @@ void loop() {
   lightWord(w_IT, 80);
   lightWord(w_IS, 80);
 
-  // leds[5] = CHSV(10, 255, 255);
-
   Serial.print(year(), DEC);
   Serial.print('/');
   Serial.print(month(), DEC);
@@ -507,17 +551,19 @@ void loop() {
   Serial.print(second(), DEC);
   Serial.println();
 
-  if(a > 11) a=0;
-  Serial.println(a);
+  // if(a > 11) a=0;
+  // // Serial.println(a);
   // lightWord(HOURS[a], 120);
-  a++;
+  // a++;
 
-  if(b > 59) b=0;
-  Serial.println(b);
-  lightWord(MINUTES[b], 200);
-  b++;
+  // if(b > 59) b=0;
+  // // Serial.println(b);
+  // lightWord(MINUTES[b], 200);
+  // b++;
 
-  lightLetter(64+b, hue);
+  lightTime(12, 28);
+
+  // lightLetter(64+b, hue);
   // Serial.println();
   // lightLetter(66);
   // Serial.println();
