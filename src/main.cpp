@@ -62,6 +62,13 @@ const PROGMEM int w_MINUTE[] = {1, 8, 6};
 const PROGMEM int w_MINUTES[] = {1, 8, 7};
 const PROGMEM int w_OCLOCK[] = {7, 12, 7};
 const PROGMEM int w_QUARTER[] = {10, 7, 7};
+const PROGMEM int w_IN[] = {3, 13, 2};
+const PROGMEM int w_THE[] = {6, 13, 3};
+const PROGMEM int w_MORNING[] = {10, 13, 7};
+const PROGMEM int w_AT[] = {1, 13, 2};
+const PROGMEM int w_AFTERNOON[] = {1, 14, 9};
+const PROGMEM int w_EVENING[] = {10, 14, 7};
+const PROGMEM int w_NIGHT[] = {5, 15, 5};
 
 const PROGMEM int HOURS[][3] = {
   {1, 1, 0}, // nothing...
@@ -71,7 +78,7 @@ const PROGMEM int HOURS[][3] = {
   {7, 11, 4}, // four
   {11, 11, 4}, // five
   {14, 9, 3}, // six
-  {2, 10, 5}, // seven (beven)
+  {2, 10, 5}, // seven
   {9, 10, 5}, // eight
   {6, 10, 4}, // nine
   {13, 10, 3}, // ten
@@ -112,7 +119,8 @@ const PROGMEM int MINUTES[][3] = {
   {9, 6, 5}, // eight (twenty)
   {1, 5, 4}, // nine (twenty)
 
-  {8, 8, 4}, // half
+  {1, 2, 6}, // thirty
+  // {8, 8, 4}, // half
 
   {14, 2, 3}, // one (thirty)
   {5, 3, 3},  // two (thirty)
@@ -468,6 +476,7 @@ void lightTime(uint8_t hours, uint8_t minutes) {
       break;
 
     case 1 : 
+      lightWord(w_PAST, h);
       lightWord(w_MINUTE, h);
       lightWord(MINUTES[minutes], h);
       past = true;
@@ -511,7 +520,7 @@ void lightTime(uint8_t hours, uint8_t minutes) {
     case 31 ... 39 :
       lightWord(w_PAST, h);
       lightWord(MINUTES[30], h);
-      lightWord(MINUTES[minutes - 20], h);
+      lightWord(MINUTES[minutes - 30], h);
       lightWord(w_MINUTES, h);
       past = true;
       break;
@@ -546,6 +555,10 @@ void lightTime(uint8_t hours, uint8_t minutes) {
 
   }
 
+  if(!past) {
+    hours++;
+    if(hours > 23) hours = 0;
+  }
 
   switch(hours) {
     case 0 :
@@ -553,9 +566,29 @@ void lightTime(uint8_t hours, uint8_t minutes) {
       break;
     case 1 ... 11 :
       lightWord(HOURS[hours], h);
+      lightWord(w_IN, h);
+      lightWord(w_THE, h);
+      lightWord(w_MORNING, h);
       break;
     case 12 :
       lightWord(w_NOON, h);
+      break;
+    case 13 ... 17 :
+      lightWord(HOURS[hours - 12], h);
+      lightWord(w_IN, h);
+      lightWord(w_THE, h);
+      lightWord(w_AFTERNOON, h);
+      break;
+    case 18 ... 19 :
+      lightWord(HOURS[hours - 12], h);
+      lightWord(w_IN, h);
+      lightWord(w_THE, h);
+      lightWord(w_EVENING, h);
+      break;
+    case 20 ... 23 :
+      lightWord(HOURS[hours - 12], h);
+      lightWord(w_AT, h);
+      lightWord(w_NIGHT, h);
       break;
   }
 
@@ -639,7 +672,7 @@ void loop() {
   // b++;
 
   if(b > 59) b=0;
-  lightTime(1, b);
+  lightTime(hour(), minute());
   b++;
 
   // lightLetter(64+b, hue);
