@@ -56,6 +56,7 @@ const PROGMEM int w_A[] = {7, 1, 1};
 const PROGMEM int w_HALF[] = {8, 8, 4};
 const PROGMEM int w_PAST[] = {13, 8, 4};
 const PROGMEM int w_TO[] = {1, 9, 2};
+const PROGMEM int w_THIRTY[] = {1, 2, 6};
 const PROGMEM int w_NOON[] = {6, 14, 4};
 const PROGMEM int w_MIDNIGHT[] = {2, 15, 8};
 const PROGMEM int w_MINUTE[] = {1, 8, 6};
@@ -117,45 +118,45 @@ const PROGMEM int MINUTES[][3] = {
   {1, 6, 3}, // six (twenty)
   {1, 7, 5}, // seven (twenty)
   {9, 6, 5}, // eight (twenty)
-  {1, 5, 4}, // nine (twenty)
+  {1, 5, 4} //, // nine (twenty)
 
-  {1, 2, 6}, // thirty
-  // {8, 8, 4}, // half
+  // {1, 2, 6}, // thirty
+  // // {8, 8, 4}, // half
 
-  {14, 2, 3}, // one (thirty)
-  {5, 3, 3},  // two (thirty)
-  {12, 4, 5}, // three (thirty)
-  {8, 2, 4}, // four (thirty)
-  {1, 3, 4}, // five (thirty)
-  {1, 6, 3}, // six (thirty)
-  {1, 7, 5}, // seven (thirty)
-  {9, 6, 5}, // eight (thirty)
-  {1, 5, 4}, // nine (thirty)
+  // {14, 2, 3}, // one (thirty)
+  // {5, 3, 3},  // two (thirty)
+  // {12, 4, 5}, // three (thirty)
+  // {8, 2, 4}, // four (thirty)
+  // {1, 3, 4}, // five (thirty)
+  // {1, 6, 3}, // six (thirty)
+  // {1, 7, 5}, // seven (thirty)
+  // {9, 6, 5}, // eight (thirty)
+  // {1, 5, 4}, // nine (thirty)
 
-  {8, 1, 6}, // twenty (till)
+  // {8, 1, 6}, // twenty (till)
 
-  {14, 2, 3}, // one (twenty till)
-  {5, 3, 3},  // two (twenty till)
-  {12, 4, 5}, // three (twenty till)
-  {8, 2, 4}, // four (twenty till)
+  // {14, 2, 3}, // one (twenty till)
+  // {5, 3, 3},  // two (twenty till)
+  // {12, 4, 5}, // three (twenty till)
+  // {8, 2, 4}, // four (twenty till)
 
-  {10, 7, 7}, // quarter (till)
+  // {10, 7, 7}, // quarter (till)
 
-  {1, 6, 3}, // six (twenty till)
-  {1, 7, 5}, // seven (twenty till)
-  {9, 6, 5}, // eight (twenty till)
-  {1, 5, 4}, // nine (twenty till)
+  // {1, 6, 3}, // six (twenty till)
+  // {1, 7, 5}, // seven (twenty till)
+  // {9, 6, 5}, // eight (twenty till)
+  // {1, 5, 4}, // nine (twenty till)
 
-  {14, 1, 3}, // ten (minutes till)
-  {1, 5, 4}, // nine (minutes till)
-  {9, 6, 5}, // eight (minutes till)
-  {1, 7, 5}, // seven (minutes till)
-  {1, 6, 3}, // six (minutes till)
-  {1, 3, 4}, // five (minutes till)
-  {8, 2, 4}, // four (minutes till)
-  {12, 4, 5}, // three (minutes till)
-  {5, 3, 3},  // two (minutes till)
-  {14, 2, 3} // one (minute till)
+  // {14, 1, 3}, // ten (minutes till)
+  // {1, 5, 4}, // nine (minutes till)
+  // {9, 6, 5}, // eight (minutes till)
+  // {1, 7, 5}, // seven (minutes till)
+  // {1, 6, 3}, // six (minutes till)
+  // {1, 3, 4}, // five (minutes till)
+  // {8, 2, 4}, // four (minutes till)
+  // {12, 4, 5}, // three (minutes till)
+  // {5, 3, 3},  // two (minutes till)
+  // {14, 2, 3} // one (minute till)
 };
 
 static const unsigned char font_data[] = {
@@ -472,7 +473,7 @@ void lightTime(uint8_t hours, uint8_t minutes) {
           lightWord(w_OCLOCK, h);
           break;
       }
-      past = false;
+      past = true;
       break;
 
     case 1 : 
@@ -519,7 +520,7 @@ void lightTime(uint8_t hours, uint8_t minutes) {
 
     case 31 ... 39 :
       lightWord(w_PAST, h);
-      lightWord(MINUTES[30], h);
+      lightWord(w_THIRTY, h);
       lightWord(MINUTES[minutes - 30], h);
       lightWord(w_MINUTES, h);
       past = true;
@@ -527,7 +528,7 @@ void lightTime(uint8_t hours, uint8_t minutes) {
 
     case 40 ... 44 :
       lightWord(w_TO, h);
-      lightWord(MINUTES[minutes - 40], h);
+      lightWord(MINUTES[60 - minutes], h);
       lightWord(w_MINUTES, h);
       past = false;
       break;
@@ -541,14 +542,14 @@ void lightTime(uint8_t hours, uint8_t minutes) {
 
     case 46 ... 58 :
       lightWord(w_TO, h);
-      lightWord(MINUTES[minutes - 40], h);
+      lightWord(MINUTES[60 - minutes], h);
       lightWord(w_MINUTES, h);
       past = false;
       break;
 
     case 59 :
       lightWord(w_TO, h);
-      lightWord(MINUTES[minutes - 40], h);
+      lightWord(MINUTES[60 - minutes], h);
       lightWord(w_MINUTE, h);
       past = false;
       break;
@@ -566,6 +567,7 @@ void lightTime(uint8_t hours, uint8_t minutes) {
       break;
     case 1 ... 11 :
       lightWord(HOURS[hours], h);
+      lightWord(w_OCLOCK, h);
       lightWord(w_IN, h);
       lightWord(w_THE, h);
       lightWord(w_MORNING, h);
@@ -575,18 +577,21 @@ void lightTime(uint8_t hours, uint8_t minutes) {
       break;
     case 13 ... 17 :
       lightWord(HOURS[hours - 12], h);
+      lightWord(w_OCLOCK, h);
       lightWord(w_IN, h);
       lightWord(w_THE, h);
       lightWord(w_AFTERNOON, h);
       break;
     case 18 ... 19 :
       lightWord(HOURS[hours - 12], h);
+      lightWord(w_OCLOCK, h);
       lightWord(w_IN, h);
       lightWord(w_THE, h);
       lightWord(w_EVENING, h);
       break;
     case 20 ... 23 :
       lightWord(HOURS[hours - 12], h);
+      lightWord(w_OCLOCK, h);
       lightWord(w_AT, h);
       lightWord(w_NIGHT, h);
       break;
@@ -672,6 +677,7 @@ void loop() {
   // b++;
 
   if(b > 59) b=0;
+  // lightTime(21, 45);
   lightTime(hour(), minute());
   b++;
 
